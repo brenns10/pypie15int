@@ -123,7 +123,7 @@ that with these lines (don't bother if your secrets imported correctly):
 ```python
 import os
 os.chdir(r'Path/to/your/code/folder/here')
-``
+```
 
 Importing your secrets should work fine now.  Next, let's import everything from
 the Twitter library:
