@@ -150,3 +150,112 @@ t.statuses.update(status='Hello, world!')
 
 If you look at your bot's Twitter page, you'll see your first Tweet!
 
+
+## The Twitter API
+
+Now that you've had your first taste of controlling Twitter via Python, let's
+take a look at some of the major features you have at your disposal:
+
+### The REST API
+
+When we did `Twitter(auth=...)`, we were creating a "Twitter Object".  This
+gives you access to one half of Twitter's API, the "REST API".  This half lets
+you ask Twitter for information, and it'll give it to you.  For instance, you
+can ask it to give you a user's timeline, and it'll return you their latest
+tweets.  Or, (as we did above), you can use it to tweet, or retweet.  Here are
+some of the highlights (assuming your Twitter Object is named `t`):
+
+* `t.statuses.update()`: Make a tweet. [doc][api-update]
+    * `status=`: (required) keyword argument for supplying status text.
+    * `in_reply_to_status_id`: (optional) if you want to reply to someone else's
+      tweet, include its id here (and @mention the author's name in the tweet),
+      and it'll show up as a reply.
+* `t.statuses.retweet()`: Retweet someone else's tweet. [doc][api-retweet]
+    * `id=`: (required) the ID of whatever tweet you want to retweet
+* `t.friendships.create()`: Follow somebody. [doc][api-follow]
+    * `screen_name=`: The screen name of the user to follow.
+    * `user_id=`: The id of the user to follow.  Either this or the above
+      parameter should be provided. 
+* `t.friends.list()`: Get a list of people someone is
+  following. [doc][api-friends].  This will return to you "pages" of some size,
+  which is 20 by default.
+    * `user_id` or `screen_name`: the user whose followers to list
+    * `cursor=`: The page number to request.
+    * `count=`: Number of users in a page.
+    * EG: `t.friends.list(screen_name='brenns10', count='50')` would get you at
+      most 50 people I follow.
+* `t.followers.list()`: Get a list of people following a
+  user. [doc][api-followers]
+    * Pretty much the same as the friends list function.
+  
+There are plenty more actions available, but these are going to be the most
+useful for a bot.  If you want to see more actions in the REST API, check out
+the [documentation][api-rest] to see a them.  This documentation is by Twitter,
+and it's not specific to Python.  So, if you're looking to use a specific part
+of this API, ask me to help and I can assist in "translating" the documentation
+into Python.
+
+#### Return Values
+
+All of the documentation pages I linked to above contain information about what
+the functions return.  When these API calls return in Python, they give you
+lists, dicts, strings, ints, etc.  These API calls return tons of information,
+so I recommend you try them all out in the IDLE, print out, and save the
+responses to refer back to later.
+
+### The Streaming API
+
+The second half of the Twitter API is called the "streaming" API.  Basically,
+instead of asking Twitter for information and getting it back all in one chunk,
+this allows you to ask Twitter to give you information as it happens.  This may
+be a very useful way to wait for people to "trigger" your bot.  To use this, you
+need to create a `TwitterStream` object.  It's just like creating a Twitter
+object, with one critical difference.
+
+Twitter Streams can stream either public data, or a single user's data.  Public
+streams would stream you a sample of tweets, whereas user streams would stream
+you all of the activity on a user's account.  In order to create a
+`TwitterStream`, you need to choose which type of data you want.  If you want
+public data (which you probably won't), the domain is `stream.twitter.com`.  If
+you want user data, the domain is `userstream.twitter.com`.  Once you've picked,
+making a `TwitterStream` object is easy:
+
+```python
+ts = TwitterStream(domain='your choice here', auth=OAuth(...))
+```
+
+After that, you get to ask for a stream.  For user streams, you call
+`ts.user()`, and that will start streaming you every event that user sees.  The
+return values are dictionaries, and they can come in the following forms:
+
+* `{'delete': ....}` - someone deleted a tweet
+* `{'event': ...}` - an event occurred (someone favorited a tweet, or something
+  similar).
+* `{'user': {...}, 'text': {...}}` - there was a tweet, by `user`, with `text`,
+  in your feed.
+
+## Putting a Bot Together
+
+With these two halves of the API, you can write a bot.  The best way to do this
+is to create both a `Twitter` object and a `TwitterStream` object.  Then, listen
+to the stream and wait for some "trigger".  Typically, this will be a tweet by
+someone other than you.  Then, you use the `Twitter` object to do some
+action... typically, respond to their tweet.  You can see my [example][bot.py]
+for inspiration.
+
+## Warnings
+
+Be very careful with what your bot tweets.  Especially, you need to make sure
+that you don't spam people, especially with `@mentions`.  This will annoy people
+and maybe make Twitter mad at you too.
+
+Also, try to make as few API calls as possible.  Twitter has "rate limiting",
+which means that if you make too many API calls, they will stop responding to
+them for a little while.
+
+[api-update]: https://dev.twitter.com/rest/reference/post/statuses/update
+[api-retweet]: https://dev.twitter.com/rest/reference/post/statuses/retweet/%3Aid
+[api-follow]: https://dev.twitter.com/rest/reference/post/friendships/create
+[api-friends]:https://dev.twitter.com/rest/reference/get/friends/list
+[api-followers]: https://dev.twitter.com/rest/reference/get/followers/list
+[api-rest]: https://dev.twitter.com/rest/public
