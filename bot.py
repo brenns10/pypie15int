@@ -37,6 +37,9 @@ def main():
         if 'event' in tweet:
             print('received event %s' % tweet['event'])
 
+        elif 'hangup' in tweet:
+            return
+
         elif 'text' in tweet and tweet['user']['screen_name'] != USERNAME:
 
             # 'text' means that this is a tweet.  If the screen name wasn't our
@@ -54,4 +57,5 @@ def main():
 
 # run main() when this script is called
 if __name__ == '__main__':
-    main()
+    while True:
+        main()
