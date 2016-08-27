@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Bot that replies to any @mention with Taylor Swift lyrics."""
 
-from twitter import Twitter, TwitterStream, OAuth
 from pprint import pprint
 import random
 
-# API_KEY, API_SECRET, ACCESS_TOKEN, and ACCESS_TOKEN_SECRET come from here!
-from secrets import *
+from twitter import Twitter, TwitterStream, OAuth
 
-USERNAME = 'pypie15bot'
+from secrets import ACCESS_TOKEN, ACCESS_TOKEN_SECRET, API_KEY, API_SECRET
+
+USERNAME = 'PySwizzleDev'
 LYRICS = 'taylor.txt'
 
 
@@ -16,9 +16,6 @@ def main():
     # open up a file and get a list of lines of lyrics (no blank lines)
     with open(LYRICS) as lyrics_file:
         lyrics = [line.strip() for line in lyrics_file if line != "\n"]
-
-    # print out our list of lyrics (for diagnostics)
-    pprint(lyrics)
 
     # get twitter api ready
     auth = OAuth(ACCESS_TOKEN, ACCESS_TOKEN_SECRET, API_KEY, API_SECRET)
@@ -52,6 +49,10 @@ def main():
             line = random.choice(lyrics)
             print('responding with line: %s' % line)
             reply = '@' + tweet['user']['screen_name'] + ' ' + line
+
+            # Make sure the reply is 140 characters...
+            reply = reply[:140]
+
             t.statuses.update(status=reply, in_reply_to_status_id=tweet['id'])
 
 
